@@ -11,40 +11,45 @@ class MoviesController < ApplicationController
     @all_ratings = ['G','PG','PG-13','R','NC-17','NR'] #Array of all possible ratings to reference to
     @checked = {}                    #Empty array will be filled with checked values
 
-    if params[:ratings] != nil
-    	@all_ratings.each { |rating|
-    		@checked[rating] = params[:ratings].has_key?(rating)
+#---------------------------------------------------------------------------------------------
+#Sorting Algorithm for Title and Release Date
+
+	#If no new sort was passed in, then recover old one from session
+    if(params[:sort] == nil && session[:sort] != nil)
+    	params[:sort] = session[:sort]
+    end
+
+    #Sort the data
+    if(params[:sort].to_s == 'title')                 #if user clicked title
+    	@movies = @movies.sort_by {|mov| mov.title}   #Actually sort the movies by title
+    	session[:sort] = params[:sort]                #Remember the sorting later just in case they don't pass you one
+    elsif(params[:sort].to_s == 'release')                          #Otherwise if they clicked release
+    	@movies = @movies.sort_by {|mov| mov.release_date.to_s}     # Sort the movies by release date
+    	session[:sort] = params[:sort]                              # Save the sorting for later
+    end
+#-------------------------------------------------------------------------------------------------
+#Filtering Algorithm for rating
+
+	#If no new filter passed in (AKA all checkboxes left blank), then recover old filter
+    if(params[:ratings] == nil  && session[:ratings] != nil)
+    	params[:ratings] = session[:ratings]
+    end
+
+    #Check the correct boxes
+    if params[:ratings] != nil                          #if user passed in a filter
+    	@all_ratings.each { |rating|                    # for each rating
+    		@checked[rating] = params[:ratings].has_key?(rating)  #use the filter the user selects
     	}
     else
-    	@all_ratings.each { |rating|
-    		@checked[rating] = true
+    	@all_ratings.each { |rating|     #If no filter exists in params or session
+    		@checked[rating] = true      # Set all checkboxes to checked
     	}
     end
 
-    if(params[:sort].to_s == 'title')
-    	@movies = @movies.sort_by {|mov| mov.title}
-    elsif(params[:sort].to_s == 'release')
-    	@movies = @movies.sort_by {|mov| mov.release_date.to_s}
-    end
-
-
-    # set the checked hash to make checkboxes be checked
-=begin	@all_ratings.each { |rating|
-      if params[:ratings] == nil
-        @checked[rating] = false
-      else
-        @checked[rating] = params[:ratings].has_key?(rating)
-      end
-    }
-=end
-
-    # Sort Based on Selected Ratings
-    if(params[:ratings] != nil)
+    # Filter Based on Selected Ratings
+    if(params[:ratings] != nil) 
     	@movies = @movies.find_all{ |m| params[:ratings].has_key?(m.rating) }
     	session[:ratings] = params[:ratings]
-    elsif
-    	(session[:ratings] != nil)
-   		@movies = @movies.find_all{ |m| session[:ratings].has_key?(m.rating) }
   	end
 
   end
