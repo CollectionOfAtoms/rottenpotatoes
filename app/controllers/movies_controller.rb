@@ -21,7 +21,7 @@ class MoviesController < ApplicationController
 
     #Sort the data
     if(params[:sort].to_s == 'title')                 #if user clicked title
-    	@movies = @movies.sort_by {|mov| mov.title}   #Actually sort the movies by title
+    	@movies = @movies.sort_by {|mov| mov.title.downcase}   #Actually sort the movies by title
     	session[:sort] = params[:sort]                #Remember the sorting later just in case they don't pass you one
     elsif(params[:sort].to_s == 'release')                          #Otherwise if they clicked release
     	@movies = @movies.sort_by {|mov| mov.release_date.to_s}     # Sort the movies by release date
